@@ -11,6 +11,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       color = 'primary',
       max = 99,
       showZero = false,
+      shape = 'pill',
       placement = 'top-right',
       offset,
       ...rest
@@ -34,6 +35,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
         {children}
         <BadgeBadgeStyled
           ownerColor={color}
+          ownerShape={shape}
           ownerDot={dot}
           ownerPlacement={placement}
           ownerOffset={offset}

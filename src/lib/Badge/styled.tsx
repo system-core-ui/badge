@@ -2,7 +2,8 @@ import type { CSSObject } from '@emotion/react';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { ThemeSchema } from '@thanh-libs/theme';
-import type { BadgePlacement, BadgeColor } from '../models';
+import type { BadgePlacement, BadgeColor, BadgeShape } from '../models';
+import { getColorPalette } from './helpers';
 
 export const BadgeRootStyled = styled.span(
   (): CSSObject => {
@@ -17,6 +18,7 @@ export const BadgeRootStyled = styled.span(
 
 export interface BadgeBadgeOwnerState {
   ownerColor?: BadgeColor;
+  ownerShape?: BadgeShape;
   ownerDot?: boolean;
   ownerPlacement?: BadgePlacement;
   ownerOffset?: [number, number];
@@ -24,39 +26,43 @@ export interface BadgeBadgeOwnerState {
 }
 
 export const BadgeBadgeStyled = styled.span<BadgeBadgeOwnerState>(
-  ({ ownerColor = 'primary', ownerDot, ownerPlacement = 'top-right', ownerOffset, ownerInvisible }): CSSObject => {
-    const { palette, shape, typography }: ThemeSchema = useTheme();
+  ({ ownerColor = 'primary', ownerShape = 'pill', ownerDot, ownerPlacement = 'top-right', ownerOffset, ownerInvisible }): CSSObject => {
+    const theme: ThemeSchema = useTheme();
+    const { shape, typography } = theme;
 
-    const baseColor = palette?.[ownerColor]?.main || '#1976d2';
-    const contrastText = palette?.[ownerColor]?.contrastText || '#fff';
-    
+    // Use robust color helper from ThemeSchema
+    const colorPalette = getColorPalette(theme, ownerColor);
+    const baseColor = colorPalette.main;
+    const contrastText = colorPalette.contrastText;
+
     let top = 'auto', bottom = 'auto', left = 'auto', right = 'auto';
     let transform = '';
 
     const offsetXPx = ownerOffset?.[0] || 0;
     const offsetYPx = ownerOffset?.[1] || 0;
 
+    // Use a slightly softer translation (e.g., 30%) instead of 50% so the badge anchors well to the content
     switch (ownerPlacement) {
       case 'top-left':
         top = `${0 + offsetYPx}px`;
         left = `${0 + offsetXPx}px`;
-        transform = ownerInvisible ? 'scale(0) translate(-50%, -50%)' : 'scale(1) translate(-50%, -50%)';
+        transform = ownerInvisible ? 'scale(0) translate(-30%, -30%)' : 'scale(1) translate(-30%, -30%)';
         break;
       case 'bottom-right':
         bottom = `${0 - offsetYPx}px`;
         right = `${0 - offsetXPx}px`;
-        transform = ownerInvisible ? 'scale(0) translate(50%, 50%)' : 'scale(1) translate(50%, 50%)';
+        transform = ownerInvisible ? 'scale(0) translate(30%, 30%)' : 'scale(1) translate(30%, 30%)';
         break;
       case 'bottom-left':
         bottom = `${0 - offsetYPx}px`;
         left = `${0 + offsetXPx}px`;
-        transform = ownerInvisible ? 'scale(0) translate(-50%, 50%)' : 'scale(1) translate(-50%, 50%)';
+        transform = ownerInvisible ? 'scale(0) translate(-30%, 30%)' : 'scale(1) translate(-30%, 30%)';
         break;
       case 'top-right':
       default:
         top = `${0 + offsetYPx}px`;
         right = `${0 - offsetXPx}px`;
-        transform = ownerInvisible ? 'scale(0) translate(50%, -50%)' : 'scale(1) translate(50%, -50%)';
+        transform = ownerInvisible ? 'scale(0) translate(30%, -30%)' : 'scale(1) translate(30%, -30%)';
         break;
     }
 
@@ -67,11 +73,20 @@ export const BadgeBadgeStyled = styled.span<BadgeBadgeOwnerState>(
       borderRadius: '50%',
     };
 
+    let shapeBorderRadius = shape?.borderRadius || '4px';
+    if (ownerShape === 'pill') {
+      shapeBorderRadius = '9999px';
+    } else if (ownerShape === 'circle') {
+      shapeBorderRadius = '50%';
+    } else if (ownerShape === 'square') {
+      shapeBorderRadius = '4px';
+    }
+
     const countStyle: CSSObject = {
       height: '20px',
       minWidth: '20px',
-      padding: '0 6px',
-      borderRadius: shape?.borderRadius || '10px',
+      padding: ownerShape === 'circle' ? '0' : '0 6px',
+      borderRadius: shapeBorderRadius,
       fontSize: typography?.body?.fontSize || '0.75rem',
       fontWeight: typography?.fontWeight || 500,
       lineHeight: '20px',
@@ -90,6 +105,7 @@ export const BadgeBadgeStyled = styled.span<BadgeBadgeOwnerState>(
       backgroundColor: baseColor,
       color: contrastText,
       transition: 'transform 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
+      transformOrigin: '100% 0%',
       top,
       bottom,
       left,
