@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import type { BadgeProps } from '../models';
-import { BadgeRootStyled, BadgeBadgeStyled } from './styled';
+import { BadgeRootStyled, BadgeBadgeStyled, VisuallyHiddenStyled } from './styled';
 
 export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
   (
@@ -45,9 +45,9 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
           {!dot && displayCount}
         </BadgeBadgeStyled>
         {!dot && typeof count === 'number' && (
-          <span className="sr-only" aria-label={`hiển thị ${displayCount}`}>
+          <VisuallyHiddenStyled aria-label={`hiển thị ${displayCount}`}>
              {displayCount}
-          </span>
+          </VisuallyHiddenStyled>
         )}
       </BadgeRootStyled>
     );
